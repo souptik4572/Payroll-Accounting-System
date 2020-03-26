@@ -1,8 +1,10 @@
 auth.onAuthStateChanged(user => {
     if(user){
-        db.collection('Employees').onSnapshot(snapshot => {
+        db.collection('users').onSnapshot(snapshot => {
             setupGuides(snapshot.docs);
             setupUI(user);
+        }, err => {
+            console.log(err.message);
         });
     }
     else{
@@ -14,7 +16,7 @@ auth.onAuthStateChanged(user => {
 const createForm = document.querySelector('#create-form');
 createForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    db.collection('Employees').add({
+    db.collection('users').add({
         Name: createForm['name'].value,
         Wage: createForm['wage'].value,
         dear: createForm['dear'].value,
@@ -38,6 +40,10 @@ signupForm.addEventListener('submit', (e) => {
     //console.log(email, password);
 
     auth.createUserWithEmailAndPassword(email, password).then(cred => {
+        return db.collection('users').doc(cred.user.uid).set({
+            bio: signupForm['signup-bio'].value
+        });
+    }).then(() => {
         const modal = document.querySelector('#modal-signup');
         M.Modal.getInstance(modal).close();
         signupForm.reset();
